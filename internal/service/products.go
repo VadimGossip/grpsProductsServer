@@ -35,53 +35,33 @@ func (ps *ProductService) Fetch(ctx context.Context, req *products.FetchRequest)
 		return nil, err
 	}
 
-	type changeItem struct {
-		price   int
-		counter int
-	}
-
-	changesMap := make(map[string]changeItem)
 	for idx := range data {
 		name := data[idx][0]
 		price, err := strconv.Atoi(data[idx][1])
 		if err != nil {
 			return nil, err
 		}
-		if val, ok := changesMap[name]; ok {
-			if val.price != price {
-				changesMap[name] = changeItem{
-					price:   price,
-					counter: val.counter + 1,
-				}
-			}
-		}
-		changesMap[name] = changeItem{
-			price:   price,
-			counter: 1,
-		}
-	}
-
-	for key, val := range changesMap {
 		p := domain.Product{
-			Name:         key,
-			Price:        val.price,
-			ChangesCount: val.counter,
+			Name:         name,
+			Price:        price,
+			ChangesCount: 0,
 			Timestamp:    time.Now(),
 		}
+
 		repoProduct, err := ps.repo.GetByName(ctx, p.Name)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
-				p.ChangesCount = 0
 				if err = ps.repo.Insert(ctx, p); err != nil {
 					return nil, err
 				}
 			}
 		}
-		p.ChangesCount += repoProduct.ChangesCount
-		if err = ps.repo.UpdateByName(ctx, p); err != nil {
-			return nil, err
+		if repoProduct.Price != p.Price {
+			p.ChangesCount = repoProduct.ChangesCount + 1
+			if err = ps.repo.UpdateByName(ctx, p); err != nil {
+				return nil, err
+			}
 		}
-
 	}
 	return &products.FetchResponse{
 		Status: "ok",
