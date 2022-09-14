@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"net"
 
-	audit "github.com/VadimGossip/grpsProductsServer/pkg/domain"
+	"github.com/VadimGossip/grpsProductsServer/gen/products"
 	"google.golang.org/grpc"
 )
 
 type Server struct {
-	grpcSrv     *grpc.Server
-	auditServer audit.AuditServiceServer
+	grpcSrv        *grpc.Server
+	productsServer products.ProductsServiceServer
 }
 
-func New(auditServer audit.AuditServiceServer) *Server {
+func NewServer(productsServer products.ProductsServiceServer) *Server {
 	return &Server{
-		grpcSrv:     grpc.NewServer(),
-		auditServer: auditServer,
+		grpcSrv:        grpc.NewServer(),
+		productsServer: productsServer,
 	}
 }
 
@@ -28,11 +28,15 @@ func (s *Server) ListenAndServe(port int) error {
 		return err
 	}
 
-	audit.RegisterAuditServiceServer(s.grpcSrv, s.auditServer)
+	products.RegisterProductsServiceServer(s.grpcSrv, s.productsServer)
 
 	if err := s.grpcSrv.Serve(lis); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (s *Server) Stop() func() {
+	return s.grpcSrv.GracefulStop
 }

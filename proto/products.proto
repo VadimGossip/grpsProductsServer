@@ -7,10 +7,22 @@ import "google/protobuf/timestamp.proto";
 option go_package = "../pkg/domain/products";
 
 enum SortingField {
-  name = 0;
+  product_name = 0;
   price = 1;
   changes_count = 2;
   timestamp = 3;
+}
+
+enum SortingType {
+  asc = 0;
+  desc = 1;
+}
+
+message ProductItem {
+  string product_name = 1;
+  int32 price = 2;
+  int32 count = 3;
+  google.protobuf.Timestamp timestamp = 4;
 }
 
 message FetchRequest {
@@ -23,16 +35,9 @@ message FetchResponse {
 
 message ListRequest {
   SortingField sort_field = 1;
-  int32 sort_asc = 2;
+  SortingType sort_type = 2;
   int32 paging_offset = 3;
   int32 paging_limit = 4;
-}
-
-message ProductItem {
-  string name = 1;
-  int32 price = 2;
-  int32 count = 3;
-  google.protobuf.Timestamp timestamp = 4;
 }
 
 message ListResponse {

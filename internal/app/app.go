@@ -34,19 +34,21 @@ func Run(configDir string) {
 	}
 	db := dbClient.Database(cfg.Mongo.Database)
 
-	auditRepo := repository.NewAudit(db)
-	auditService := service.NewAudit(auditRepo)
-	auditSrv := server.NewAuditServer(auditService)
-	srv := server.New(auditSrv)
+	productsRepo := repository.NewProducts(db)
+	productsService := service.NewProductService(productsRepo)
+	productsServer := server.NewProductServer(productsService)
+	srv := server.NewServer(productsServer)
 
-	logrus.Info("Audit Server for fin manager service started")
+	logrus.Info("Products grps server started")
 	if err := srv.ListenAndServe(cfg.Server.Port); err != nil {
-		logrus.Fatalf("error occured while running audit server for fin manager: %s", err.Error())
+		logrus.Fatalf("error occured while running products grps server: %s", err.Error())
 	}
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
 
-	logrus.Info("Audit Server for fin manager service stopped")
+	srv.Stop()
+	logrus.Info("Products grps server stopped")
+
 }
