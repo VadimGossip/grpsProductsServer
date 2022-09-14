@@ -33,7 +33,7 @@ func (r *Products) GetByName(ctx context.Context, name string) (products.Product
 }
 
 func (r *Products) UpdateByName(ctx context.Context, p products.Product) error {
-	filter := bson.D{{Key: "name", Value: p.Name}}
+	filter := bson.D{{Key: "product_name", Value: p.Name}}
 	update := bson.D{
 		{Key: "$set", Value: bson.D{
 			{Key: "price", Value: p.Price},
