@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -22,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProductsServiceClient interface {
-	Fetch(ctx context.Context, in *FetchRequest, opts ...grpc.CallOption) (*FetchResponse, error)
+	Fetch(ctx context.Context, in *FetchRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	List(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListResponse, error)
 }
 
@@ -34,8 +35,8 @@ func NewProductsServiceClient(cc grpc.ClientConnInterface) ProductsServiceClient
 	return &productsServiceClient{cc}
 }
 
-func (c *productsServiceClient) Fetch(ctx context.Context, in *FetchRequest, opts ...grpc.CallOption) (*FetchResponse, error) {
-	out := new(FetchResponse)
+func (c *productsServiceClient) Fetch(ctx context.Context, in *FetchRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/products.ProductsService/Fetch", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -56,7 +57,7 @@ func (c *productsServiceClient) List(ctx context.Context, in *ListRequest, opts 
 // All implementations should embed UnimplementedProductsServiceServer
 // for forward compatibility
 type ProductsServiceServer interface {
-	Fetch(context.Context, *FetchRequest) (*FetchResponse, error)
+	Fetch(context.Context, *FetchRequest) (*emptypb.Empty, error)
 	List(context.Context, *ListRequest) (*ListResponse, error)
 }
 
@@ -64,7 +65,7 @@ type ProductsServiceServer interface {
 type UnimplementedProductsServiceServer struct {
 }
 
-func (UnimplementedProductsServiceServer) Fetch(context.Context, *FetchRequest) (*FetchResponse, error) {
+func (UnimplementedProductsServiceServer) Fetch(context.Context, *FetchRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Fetch not implemented")
 }
 func (UnimplementedProductsServiceServer) List(context.Context, *ListRequest) (*ListResponse, error) {

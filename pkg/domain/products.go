@@ -32,14 +32,14 @@ var (
 
 type Product struct {
 	Name         string    `bson:"product_name"`
-	Price        int       `bson:"price"`
-	ChangesCount int       `bson:"changes_count"`
+	Price        int64     `bson:"price"`
+	ChangesCount int64     `bson:"changes_count"`
 	Timestamp    time.Time `bson:"timestamp"`
 }
 
 type PagingParams struct {
-	Offset int
-	Limit  int
+	Offset int64
+	Limit  int64
 }
 
 type SortingParams struct {

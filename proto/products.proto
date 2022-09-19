@@ -3,8 +3,9 @@ syntax = "proto3";
 package products;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
-option go_package = "../pkg/domain/products";
+option go_package = "github.com/VadimGossip/grpsProductsServer/gen/products";
 
 enum SortingField {
   product_name = 0;
@@ -20,8 +21,8 @@ enum SortingType {
 
 message ProductItem {
   string product_name = 1;
-  int32 price = 2;
-  int32 count = 3;
+  int64 price = 2;
+  int64 count = 3;
   google.protobuf.Timestamp timestamp = 4;
 }
 
@@ -29,15 +30,11 @@ message FetchRequest {
   string url = 1;
 }
 
-message FetchResponse {
-  string status = 1;
-}
-
 message ListRequest {
   SortingField sort_field = 1;
   SortingType sort_type = 2;
-  int32 paging_offset = 3;
-  int32 paging_limit = 4;
+  int64 paging_offset = 3;
+  int64 paging_limit = 4;
 }
 
 message ListResponse {
@@ -45,6 +42,6 @@ message ListResponse {
 }
 
 service ProductsService {
-  rpc Fetch(FetchRequest) returns (FetchResponse) {}
+  rpc Fetch(FetchRequest) returns (google.protobuf.Empty) {}
   rpc List(ListRequest) returns (ListResponse) {}
 }

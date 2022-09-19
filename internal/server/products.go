@@ -3,11 +3,12 @@ package server
 import (
 	"context"
 	"github.com/VadimGossip/grpsProductsServer/gen/products"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type ProductService interface {
 	List(ctx context.Context, req *products.ListRequest) (*products.ListResponse, error)
-	Fetch(ctx context.Context, req *products.FetchRequest) (*products.FetchResponse, error)
+	Fetch(ctx context.Context, req *products.FetchRequest) (*emptypb.Empty, error)
 }
 
 type ProductServer struct {
@@ -24,6 +25,6 @@ func (s *ProductServer) List(ctx context.Context, req *products.ListRequest) (*p
 	return s.service.List(ctx, req)
 }
 
-func (s *ProductServer) Fetch(ctx context.Context, req *products.FetchRequest) (*products.FetchResponse, error) {
+func (s *ProductServer) Fetch(ctx context.Context, req *products.FetchRequest) (*emptypb.Empty, error) {
 	return s.service.Fetch(ctx, req)
 }

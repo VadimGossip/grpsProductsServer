@@ -59,8 +59,8 @@ func (r *Products) List(ctx context.Context, paging products.PagingParams, sorti
 	opts.SetSort(bson.D{
 		{Key: sorting.Field, Value: sortingType},
 	})
-	opts.SetSkip(int64(paging.Offset))
-	opts.SetLimit(int64(paging.Limit))
+	opts.SetSkip(paging.Offset)
+	opts.SetLimit(paging.Limit)
 
 	cur, err := r.db.Collection("products").Find(ctx, bson.D{}, opts)
 	if err != nil {

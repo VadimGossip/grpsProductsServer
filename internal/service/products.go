@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"strconv"
 	"time"
@@ -30,17 +31,17 @@ func NewProductService(repo Repository) *ProductService {
 	}
 }
 
-func (ps *ProductService) Fetch(ctx context.Context, req *products.FetchRequest) (*products.FetchResponse, error) {
+func (ps *ProductService) Fetch(ctx context.Context, req *products.FetchRequest) (*emptypb.Empty, error) {
 	data, err := csv.ParseCsvFromUrl(req.Url)
 	if err != nil {
-		return nil, err
+		return &emptypb.Empty{}, err
 	}
 
 	for idx := range data {
 		name := data[idx][0]
-		price, err := strconv.Atoi(data[idx][1])
+		price, err := strconv.ParseInt(data[idx][1], 10, 64)
 		if err != nil {
-			return nil, err
+			return &emptypb.Empty{}, err
 		}
 		p := domain.Product{
 			Name:         name,
@@ -53,26 +54,24 @@ func (ps *ProductService) Fetch(ctx context.Context, req *products.FetchRequest)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				if err = ps.repo.Insert(ctx, p); err != nil {
-					return nil, err
+					return &emptypb.Empty{}, err
 				}
 			}
 		}
 		if repoProduct.Price != p.Price {
 			p.ChangesCount = repoProduct.ChangesCount + 1
 			if err = ps.repo.UpdateByName(ctx, p); err != nil {
-				return nil, err
+				return &emptypb.Empty{}, err
 			}
 		}
 	}
-	return &products.FetchResponse{
-		Status: "ok",
-	}, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (ps *ProductService) List(ctx context.Context, req *products.ListRequest) (*products.ListResponse, error) {
 	paging := domain.PagingParams{
-		Offset: int(req.GetPagingOffset()),
-		Limit:  int(req.GetPagingLimit()),
+		Offset: req.GetPagingOffset(),
+		Limit:  req.GetPagingLimit(),
 	}
 
 	sorting := domain.SortingParams{
@@ -89,8 +88,8 @@ func (ps *ProductService) List(ctx context.Context, req *products.ListRequest) (
 	for idx := range items {
 		item := products.ProductItem{
 			ProductName: items[idx].Name,
-			Price:       int32(items[idx].Price),
-			Count:       int32(items[idx].ChangesCount),
+			Price:       items[idx].Price,
+			Count:       items[idx].ChangesCount,
 			Timestamp:   timestamppb.New(items[idx].Timestamp),
 		}
 		respProducts = append(respProducts, &item)
