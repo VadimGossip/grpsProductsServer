@@ -2,12 +2,11 @@ package repository
 
 import (
 	"context"
-	//	"fmt"
-	//	"go.mongodb.org/mongo-driver/mongo/options"
-
-	"github.com/VadimGossip/grpsProductsServer/pkg/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/VadimGossip/grpsProductsServer/pkg/domain"
 )
 
 type Products struct {
@@ -50,34 +49,37 @@ func (r *Products) UpdateByName(ctx context.Context, p products.Product) error {
 	return err
 }
 
-func (r *Products) List(ctx context.Context, paging products.PagingParams, sorting products.SortingFildsParams) ([]products.Product, error) {
-	//opts := options.Find()
-	//sortOpts := bson.D{
-	//	{Key: fmt.Sprintf("%v", sorting.Field), Value: sorting.Asc},
-	//}
-	//
-	//opts.SetSort(sortOpts)
-	//opts.SetSkip(int64(paging.Offset))
-	//opts.SetLimit(int64(paging.Limit))
-	//
-	//cur, err := r.db.Collection("products").Find(ctx, bson.D{}, opts)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//defer cur.Close(ctx)
-	//
-	//var productsList []product.Product
-	//for cur.Next(ctx) {
-	//	var elem product.Product
-	//	if err := cur.Decode(&elem); err != nil {
-	//		return nil, err
-	//	}
-	//	productsList = append(productsList, elem)
-	//}
-	//
-	//if err := cur.Err(); err != nil {
-	//	return nil, err
-	//}
+func (r *Products) List(ctx context.Context, paging products.PagingParams, sorting products.SortingParams) ([]products.Product, error) {
+	opts := options.Find()
+	sortingType := 1
+	if sorting.SortType == "desc" {
+		sortingType = -1
+	}
 
-	return nil, nil
+	opts.SetSort(bson.D{
+		{Key: sorting.Field, Value: sortingType},
+	})
+	opts.SetSkip(int64(paging.Offset))
+	opts.SetLimit(int64(paging.Limit))
+
+	cur, err := r.db.Collection("products").Find(ctx, bson.D{}, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	var productsList []products.Product
+	for cur.Next(ctx) {
+		var item products.Product
+		if err := cur.Decode(&item); err != nil {
+			return nil, err
+		}
+		productsList = append(productsList, item)
+	}
+
+	if err := cur.Err(); err != nil {
+		return nil, err
+	}
+
+	return productsList, nil
 }

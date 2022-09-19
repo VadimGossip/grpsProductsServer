@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"strconv"
 	"time"
 
@@ -16,7 +17,7 @@ type Repository interface {
 	Insert(ctx context.Context, item domain.Product) error
 	GetByName(ctx context.Context, name string) (domain.Product, error)
 	UpdateByName(ctx context.Context, prod domain.Product) error
-	List(ctx context.Context, paging domain.PagingParams, sorting domain.SortingFildsParams) ([]domain.Product, error)
+	List(ctx context.Context, paging domain.PagingParams, sorting domain.SortingParams) ([]domain.Product, error)
 }
 
 type ProductService struct {
@@ -69,29 +70,33 @@ func (ps *ProductService) Fetch(ctx context.Context, req *products.FetchRequest)
 }
 
 func (ps *ProductService) List(ctx context.Context, req *products.ListRequest) (*products.ListResponse, error) {
-	//paging := products.PagingParams{
-	//	Offset: int(req.GetPagingOffset()),
-	//	Limit:  int(req.GetPagingLimit()),
-	//}
-	//sorting := products.SortingParams{
-	//	Field: req.SortField,
-	//	Asc:   req.SortAsc,
-	//}
-	//
-	//items, err := s.repo.List(ctx, paging, sorting)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//var sorted_products []*products.ProductItem
-	//
-	//for _, x := range items {
-	//	var sorted_product products.ProductItem
-	//	sorted_product.Name = x.Name
-	//	sorted_product.Price = int32(x.Price)
-	//	sorted_product.Count = int32(x.ChangesCount)
-	//	sorted_product.Timestamp = timestamppb.New(x.Timestamp)
-	//	sorted_products = append(sorted_products, &sorted_product)
-	//}
+	paging := domain.PagingParams{
+		Offset: int(req.GetPagingOffset()),
+		Limit:  int(req.GetPagingLimit()),
+	}
 
-	return &products.ListResponse{}, nil
+	sorting := domain.SortingParams{
+		Field:    req.GetSortField().String(),
+		SortType: req.GetSortType().String(),
+	}
+
+	items, err := ps.repo.List(ctx, paging, sorting)
+	if err != nil {
+		return nil, err
+	}
+
+	var respProducts []*products.ProductItem
+	for idx := range items {
+		item := products.ProductItem{
+			ProductName: items[idx].Name,
+			Price:       int32(items[idx].Price),
+			Count:       int32(items[idx].ChangesCount),
+			Timestamp:   timestamppb.New(items[idx].Timestamp),
+		}
+		respProducts = append(respProducts, &item)
+	}
+
+	return &products.ListResponse{
+		Product: respProducts,
+	}, nil
 }

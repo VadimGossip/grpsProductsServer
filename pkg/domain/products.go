@@ -1,7 +1,6 @@
 package products
 
 import (
-	"errors"
 	"time"
 
 	"github.com/VadimGossip/grpsProductsServer/gen/products"
@@ -43,36 +42,7 @@ type PagingParams struct {
 	Limit  int
 }
 
-type SortingFildsParams struct {
-	Name         string
-	Price        string
-	ChangesCount string
-	Timestamp    string
-}
-
-func NewSortingFiledParams() SortingFildsParams {
-	return SortingFildsParams{
-		Name:         "name",
-		Price:        "price",
-		ChangesCount: "changes_count",
-		Timestamp:    "timestamp",
-	}
-}
-
-func ToPbSortingFields(field string) (products.SortingField, error) {
-	val, ex := sortingFields[field]
-	if !ex {
-		return 0, errors.New("invalid entity")
-	}
-
-	return val, nil
-}
-
-func ToPbSortingTypes(sortingType string) (products.SortingType, error) {
-	val, ex := sortingTypes[sortingType]
-	if !ex {
-		return 0, errors.New("invalid entity")
-	}
-
-	return val, nil
+type SortingParams struct {
+	Field    string
+	SortType string
 }
